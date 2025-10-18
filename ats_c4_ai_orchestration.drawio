@@ -1,0 +1,89 @@
+<mxfile host="app.diagrams.net">
+  <diagram id="AI-Orchestration" name="C4 - AI Orchestration Service">
+    <mxGraphModel dx="1390" dy="850" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1000" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+
+        <!-- External Systems -->
+        <mxCell id="API" value="API Gateway" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#bee5eb;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="40" y="260" width="150" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="QUEUE" value="Message Queue (Kafka/RabbitMQ)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8d7da" vertex="1" parent="1">
+          <mxGeometry x="260" y="420" width="220" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="DB" value="PostgreSQL (AI Scores)" style="shape=cylinder;whiteSpace=wrap;html=1;fillColor=#cce5ff" vertex="1" parent="1">
+          <mxGeometry x="1200" y="320" width="140" height="80" as="geometry"/>
+        </mxCell>
+        <mxCell id="STORAGE" value="S3 Storage (Resumes & Artifacts)" style="shape=cylinder;whiteSpace=wrap;html=1;fillColor=#fff3cd" vertex="1" parent="1">
+          <mxGeometry x="1200" y="430" width="170" height="80" as="geometry"/>
+        </mxCell>
+        <mxCell id="METRICS" value="Prometheus / Grafana" style="whiteSpace=wrap;html=1;fillColor=#d1ecf1" vertex="1" parent="1">
+          <mxGeometry x="1200" y="180" width="170" height="60" as="geometry"/>
+        </mxCell>
+
+        <!-- AI Orchestration Cluster -->
+        <mxCell id="AI_CLUSTER" value="AI Orchestration Service" style="swimlane;rounded=1;whiteSpace=wrap;html=1;fillColor=#e2e3e5;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="520" y="150" width="600" height="420" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="CONTROLLER" value="AI Controller&#10;(REST Handlers, AuthZ, Job Manager)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff" vertex="1" parent="AI_CLUSTER">
+          <mxGeometry x="20" y="50" width="260" height="70" as="geometry"/>
+        </mxCell>
+        <mxCell id="WORKER" value="AI Worker&#10;(Async Consumers, Batch Scoring)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff" vertex="1" parent="AI_CLUSTER">
+          <mxGeometry x="320" y="50" width="260" height="70" as="geometry"/>
+        </mxCell>
+        <mxCell id="PARSER" value="Resume Parser Module&#10;(PDF/DOCX ➜ Entities/Text)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff" vertex="1" parent="AI_CLUSTER">
+          <mxGeometry x="20" y="170" width="260" height="70" as="geometry"/>
+        </mxCell>
+        <mxCell id="AI_MODEL" value="Model Executor&#10;(Embedding, Classifier, LLM Ranker)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff" vertex="1" parent="AI_CLUSTER">
+          <mxGeometry x="320" y="170" width="260" height="70" as="geometry"/>
+        </mxCell>
+        <mxCell id="MODEL_REGISTRY" value="Model Registry&#10;(Versioning, Canary, Rollback)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff" vertex="1" parent="AI_CLUSTER">
+          <mxGeometry x="170" y="290" width="260" height="70" as="geometry"/>
+        </mxCell>
+        <mxCell id="EXPLAIN" value="Explainability Engine&#10;(Attribution, Bias/Fairness)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff" vertex="1" parent="AI_CLUSTER">
+          <mxGeometry x="170" y="360" width="260" height="60" as="geometry"/>
+        </mxCell>
+
+        <!-- Edges within AI Cluster -->
+        <mxCell id="edge_c1" source="CONTROLLER" target="WORKER" value="submit jobs / manage state" style="endArrow=block;rounded=0;html=1;" edge="1" parent="AI_CLUSTER">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="edge_c2" source="WORKER" target="PARSER" value="parse resumes" style="endArrow=block;rounded=0;html=1;" edge="1" parent="AI_CLUSTER">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="edge_c3" source="WORKER" target="AI_MODEL" value="score / rank" style="endArrow=block;rounded=0;html=1;" edge="1" parent="AI_CLUSTER">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="edge_c4" source="WORKER" target="MODEL_REGISTRY" value="fetch model vX.Y" style="endArrow=block;rounded=0;html=1;" edge="1" parent="AI_CLUSTER">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="edge_c5" source="AI_MODEL" target="EXPLAIN" value="raw outputs ➜ attribution" style="endArrow=block;rounded=0;html=1;" edge="1" parent="AI_CLUSTER">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- External Edges -->
+        <mxCell id="edge1" source="API" target="CONTROLLER" value="REST / gRPC requests" style="endArrow=block;rounded=0;html=1;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="edge2" source="CONTROLLER" target="QUEUE" value="publish jobs" style="endArrow=block;rounded=0;html=1;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="edge3" source="QUEUE" target="WORKER" value="consume jobs" style="endArrow=block;rounded=0;html=1;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="edge4" source="WORKER" target="DB" value="store scores / explanations" style="endArrow=block;rounded=0;html=1;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="edge5" source="WORKER" target="STORAGE" value="read/write parsed docs" style="endArrow=block;rounded=0;html=1;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="edge6" source="AI_CLUSTER" target="METRICS" value="telemetry / alerts" style="endArrow=block;rounded=0;html=1;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
